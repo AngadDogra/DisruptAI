@@ -8,6 +8,8 @@ Disrupt AI is a real-time logistics monitoring and decision-making dashboard tha
 
 > **Logistics systems lack real-time awareness of external disruptions** such as protests, strikes, or natural disasters. These delays cost time, money, and reliability — especially when the system isn’t built to adapt quickly.
 
+![Dashboard Screenshot](assets/dashboard)
+
 ---
 
 ## Our Solution
