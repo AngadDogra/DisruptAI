@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Full Page Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .leaflet-control.legend {
+            background: #ffffff;
+            padding: 10px 14px;
+            border: 2px solid black;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0px black;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #000;
+        }
+        .leaflet-control.legend img {
+            vertical-align: middle;
+            margin-right: 6px;
+            height: 20px;
+            width: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([41.2, -74.2], 7.2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Legend
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function () {
+            const div = L.DomUtil.create('div', 'leaflet-control legend');
+            div.innerHTML = `
+                <strong>Legend</strong><br>
+                <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" /> Supplier<br>
+                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968594.png" /> Store<br>
+                <img src="https://cdn-icons-png.flaticon.com/512/1048/1048329.png" /> Truck
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+        // Icons
+        const supplierIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+        });
+        const storeIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/5968/5968594.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+        });
+        const truckIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/1048/1048329.png',
+            iconSize: [36, 36],
+            iconAnchor: [18, 36],
+        });
+
+        // Data
+        const supplier = { name: "NYC Supplier", lat: 40.730610, lon: -73.935242 };
+        const supplierCoords = [supplier.lat, supplier.lon];
+
+        const allentown = { name: "Allentown Hub", lat: 40.6084, lon: -75.4902 };
+        const philadelphia = { name: "Walmart Philadelphia", lat: 39.9526, lon: -75.1652 };
+
+        const stores = [
+            { name: "Walmart Boston", lat: 42.3601, lon: -71.0589 },
+            { name: "Walmart Scranton", lat: 41.4103, lon: -75.6611 }
+        ];
+
+        // Supplier marker
+        L.marker(supplierCoords, { icon: supplierIcon })
+            .addTo(map)
+            .bindPopup(`<strong>Supplier:</strong> ${supplier.name}`);
+
+        // Allentown pitstop
+        L.marker([allentown.lat, allentown.lon], {
+            icon: supplierIcon,
+            iconSize: [28, 28]
+        }).addTo(map).bindPopup(`<strong>Pitstop:</strong> ${allentown.name}`);
+
+        // Other stores (Boston, Scranton)
+        stores.forEach((store, index) => {
+            const coords = [store.lat, store.lon];
+            L.marker(coords, { icon: storeIcon }).addTo(map).bindPopup(`<strong>Store:</strong> ${store.name}`);
+
+            // Polyline from supplier
+            L.polyline([supplierCoords, coords], {
+                color: 'black',
+                weight: 3,
+                dashArray: '6, 4',
+                opacity: 0.8
+            }).addTo(map);
+        });
+
+        // Disrupted path (NYC → Philly)
+        L.polyline([supplierCoords, [philadelphia.lat, philadelphia.lon]], {
+            color: 'red',
+            weight: 4,
+            dashArray: '6, 4',
+            opacity: 0.8
+        }).addTo(map).bindPopup('🚧 Disrupted Route: NYC → Philadelphia');
+
+        // Suggested reroute (NYC → Allentown → Philly)
+        L.polyline([supplierCoords, [allentown.lat, allentown.lon]], {
+            color: 'green',
+            weight: 4,
+            dashArray: '2, 6',
+            opacity: 0.9
+        }).addTo(map).bindPopup('✅ NYC → Allentown');
+
+        L.polyline([[allentown.lat, allentown.lon], [philadelphia.lat, philadelphia.lon]], {
+            color: 'green',
+            weight: 4,
+            dashArray: '2, 6',
+            opacity: 0.9
+        }).addTo(map).bindPopup('✅ Allentown → Philadelphia');
+
+        // Animate truck on reroute
+        const truckMarker = L.marker(supplierCoords, { icon: truckIcon }).addTo(map);
+
+        function animateTruck(start, end, marker, duration = 6000) {
+            const steps = 100;
+            let i = 0;
+            const latStep = (end[0] - start[0]) / steps;
+            const lonStep = (end[1] - start[1]) / steps;
+
+            const interval = setInterval(() => {
+                if (i >= steps) {
+                    clearInterval(interval);
+                    return;
+                }
+                marker.setLatLng([start[0] + latStep * i, start[1] + lonStep * i]);
+                i++;
+            }, duration / steps);
+        }
+
+        animateTruck(supplierCoords, [allentown.lat, allentown.lon], truckMarker, 4000);
+        setTimeout(() => {
+            animateTruck([allentown.lat, allentown.lon], [philadelphia.lat, philadelphia.lon], truckMarker, 4000);
+        }, 4200);
+
+        function moveTruckRoute(start, end, delay, duration = 4000) {
+            setTimeout(() => {
+                animateTruck(start, end, truckMarker, duration);
+            }, delay);
+        }
+
+        // // After NYC → Allentown → Philly (ends ~8200ms)
+        // const postRerouteDelay = 9000; // small buffer after previous animation
+
+        // // Animate NYC → Scranton
+        // const scranton = stores.find(s => s.name.includes("Scranton"));
+        // moveTruckRoute(supplierCoords, [scranton.lat, scranton.lon], postRerouteDelay);
+
+        // // Animate NYC → Boston (after Scranton, ~13s total)
+        // const boston = stores.find(s => s.name.includes("Boston"));
+        // moveTruckRoute(supplierCoords, [boston.lat, boston.lon], postRerouteDelay + 4500);
+            
+        const scranton = stores.find(s => s.name.includes("Scranton"));
+        const boston = stores.find(s => s.name.includes("Boston"));
+
+        const scrantonTruck = L.marker([supplier.lat, supplier.lon], { icon: truckIcon }).addTo(map);
+        const bostonTruck = L.marker([supplier.lat, supplier.lon], { icon: truckIcon }).addTo(map);
+
+        // Animate both trucks simultaneously
+        animateTruck(
+            [supplier.lat, supplier.lon],
+            [scranton.lat, scranton.lon],
+            scrantonTruck,
+            6000
+        );
+
+        animateTruck(
+            [supplier.lat, supplier.lon],
+            [boston.lat, boston.lon],
+            bostonTruck,
+            6000
+        );
+        </script>
+</body>
+</html>

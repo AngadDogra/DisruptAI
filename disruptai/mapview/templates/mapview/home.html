@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Disrupt AI – Dashboard</title>
+
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Leaflet CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Product Sans', sans-serif;
+            background-color: #dbeafe; /* Light blue */
+            background-image: linear-gradient(#dbeafe 1px, transparent 1px),
+                            linear-gradient(90deg, #dbeafe 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: #000;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        /* .sidebar {
+            width: 50%;
+            background-color: #ffffff;
+            border-right: 4px solid black;
+            padding: 30px;
+            box-shadow: 5px 0px 0px black;
+            position: relative;
+        } */
+
+        .sidebar {
+            width: 50%;
+            background-color: #ffffff;
+            border-right: 4px solid black;
+            padding: 20px;
+            box-shadow: 5px 0px 0px black;
+            position: relative;
+            /* overflow-y: auto; */
+            max-height: 100vh;
+        }
+
+        .sidebar * {
+            font-size: 0.95rem;
+        }
+
+        /* Brand Header */
+        .brand-header {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #000;
+            background-color: #c7d2fe;
+            padding: 8px 20px;
+            border: 3px solid black;
+            border-radius: 8px;
+            box-shadow: 4px 4px 0px #000;
+            display: inline-block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Description Text */
+        .sidebar p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        /* Highlight box (e.g. for key words) */
+        .highlight {
+            background-color: #93c5fd;
+            border: 2px solid #000;
+            padding: 3px 8px;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0px #000;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        /* Map Section */
+        .map-section {
+            width: 50%;
+            background-color: #ffffff;
+            border-left: 4px solid black;
+            padding: 20px;
+            box-shadow: -5px 0px 0px black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-container {
+            width: 90%;
+            height: 90%;
+            border: 3px solid black;
+            border-radius: 12px;
+            box-shadow: 6px 6px 0px black;
+            background-color: #f1f5f9;
+            transition: box-shadow 0.3s ease;
+        }
+        .map-container:hover {
+            box-shadow: 10px 10px 0px black;
+        }
+
+        /* Leaflet Map */
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        /* Hamburger */
+        #hamburger-float {
+            position: fixed;
+            top: 35px;
+            left: 20px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: #93c5fd;
+            padding: 8px 12px;
+            border: 3px solid black;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1100;
+            box-shadow: 4px 4px 0 black;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        #hamburger-float:hover {
+            transform: scale(1.1);
+            background-color: #60a5fa;
+        }
+
+        /* Menu Overlay */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 100vw;
+            background: #c7d2fe;
+            border-bottom: 4px solid black;
+            z-index: 1099;
+            box-shadow: 0px 6px 0 black;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(-100%);
+            transition: transform 0.4s ease;
+        }
+        .menu-overlay.show {
+            transform: translateY(0);
+        }
+
+        /* Menu Content */
+        .menu-content {
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            font-weight: bold;
+            font-size: 1.6rem;
+        }
+
+        .menu-content a {
+            color: #000;
+            text-decoration: none;
+            border-bottom: 2px solid black;
+            padding-bottom: 5px;
+            width: fit-content;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+        .menu-content a:hover {
+            color: #2563eb;
+            transform: translateX(6px);
+        }
+
+        #headline-box {
+            margin-top: 20px;
+            padding: 16px;
+            border: 3px solid black;
+            border-radius: 10px;
+            background-color: #fffbcc;
+            box-shadow: 4px 4px 0px #000;
+            font-weight: 600;
+            animation: popIn 0.6s ease-in-out;
+        }
+        
+
+        .animated-headline {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            transition: opacity 0.4s ease-in-out;
+            opacity: 1;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        #alerts-section, #suggestions-section {
+            padding: 16px;
+            border: 3px solid black;
+            border-radius: 10px;
+            background-color: #fef9c3; /* soft yellow */
+            box-shadow: 4px 4px 0px #000;
+            animation: popIn 0.6s ease-in-out;
+        }
+
+        /* Section Headings */
+        #alerts-section h5, #suggestions-section h5 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Bullet List Style */
+        #alerts-section ul, #suggestions-section ul {
+            font-weight: 500;
+            padding-left: 25px;
+            margin-bottom: 0;
+        }
+        .alert-actions-wrapper {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 5px;
+        }
+
+        #alerts-section,
+        #suggestions-section {
+            flex: 1;
+        }
+
+        .leaflet-control.legend {
+            background: #ffffff;
+            padding: 10px 14px;
+            border: 2px solid black;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0px black;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #000;
+        }
+        .leaflet-control.legend img {
+            vertical-align: middle;
+            margin-right: 6px;
+            height: 20px;
+            width: 20px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div id="hamburger-float" onclick="toggleMenu()">☰</div>
+
+<div id="menu-overlay" class="menu-overlay">
+    <div class="menu-content">
+        <h3>Disrupt AI Menu</h3>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'alerts' %}">Alerts</a>
+        <a href="{% url 'map' %}" >Map</a>
+        <a href="{% url 'settings' %}">Settings</a>
+        <a href="#" onclick="toggleMenu()">Close</a>
+    </div>
+</div>
+
+
+<div class="main-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <div style="text-align: center;">
+            <div class="brand-header">
+                Disrupt AI
+            </div>
+        </div>
+        
+        <div id="headline-box">
+            <h4>Live Disruption Headline</h4>
+            <div id="headline-text" class="animated-headline">Loading news...</div>
+        </div>
+        
+        <div class="alert-actions-wrapper">
+            <div id="alerts-section" style="margin-top: 30px;">
+                <h5 style="font-weight: bold;">Current Alerts</h5>
+                <ul style="padding-left: 20px;">
+                    <li><strong>NYC:</strong> Labor protest near Bronx warehouse</li>
+                    <li><strong>Philadelphia:</strong> Road closure due to maintenance</li>
+                </ul>
+            </div>
+
+            <!-- Suggested Actions -->
+            <div id="suggestions-section" style="margin-top: 30px;">
+                <h5 style="font-weight: bold;">Suggested Actions</h5>
+                <ul style="padding-left: 20px;">
+                    <li>Reroute Truck #104 via I-78 → PA Turnpike</li>
+                    <li>Delay shipment from NYC by 2 hrs</li>
+                    <li>Notify Philly manager of delays</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+   
+
+    <!-- Map -->
+    <div class="map-section">
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map').setView([41.2, -74.2], 7.2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Legend
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function () {
+        const div = L.DomUtil.create('div', 'leaflet-control legend');
+        div.innerHTML = `
+            <strong>Legend</strong><br>
+            <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" /> Supplier<br>
+            <img src="https://cdn-icons-png.flaticon.com/512/5968/5968594.png" /> Store<br>
+            <img src="https://cdn-icons-png.flaticon.com/512/1048/1048329.png" /> Truck
+        `;
+        return div;
+    };
+    legend.addTo(map);
+
+    // Icons
+    const supplierIcon = L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+    });
+    const storeIcon = L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/5968/5968594.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+    });
+    const truckIcon = L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/1048/1048329.png',
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+    });
+
+    // Data
+    const supplier = { name: "NYC Supplier", lat: 40.730610, lon: -73.935242 };
+    const supplierCoords = [supplier.lat, supplier.lon];
+
+    const allentown = { name: "Allentown Hub", lat: 40.6084, lon: -75.4902 };
+    const philadelphia = { name: "Walmart Philadelphia", lat: 39.9526, lon: -75.1652 };
+
+    const stores = [
+        { name: "Walmart Boston", lat: 42.3601, lon: -71.0589 },
+        { name: "Walmart Scranton", lat: 41.4103, lon: -75.6611 }
+    ];
+
+    // Supplier marker
+    L.marker(supplierCoords, { icon: supplierIcon })
+        .addTo(map)
+        .bindPopup(`<strong>Supplier:</strong> ${supplier.name}`);
+
+    // Allentown pitstop
+    L.marker([allentown.lat, allentown.lon], {
+        icon: supplierIcon,
+        iconSize: [28, 28]
+    }).addTo(map).bindPopup(`<strong>Pitstop:</strong> ${allentown.name}`);
+
+    // Other stores (Boston, Scranton)
+    stores.forEach((store, index) => {
+        const coords = [store.lat, store.lon];
+        L.marker(coords, { icon: storeIcon }).addTo(map).bindPopup(`<strong>Store:</strong> ${store.name}`);
+
+        // Polyline from supplier
+        L.polyline([supplierCoords, coords], {
+            color: 'black',
+            weight: 3,
+            dashArray: '6, 4',
+            opacity: 0.8
+        }).addTo(map);
+    });
+
+    // Disrupted path (NYC → Philly)
+    L.polyline([supplierCoords, [philadelphia.lat, philadelphia.lon]], {
+        color: 'red',
+        weight: 4,
+        dashArray: '6, 4',
+        opacity: 0.8
+    }).addTo(map).bindPopup('🚧 Disrupted Route: NYC → Philadelphia');
+
+    // Suggested reroute (NYC → Allentown → Philly)
+    L.polyline([supplierCoords, [allentown.lat, allentown.lon]], {
+        color: 'green',
+        weight: 4,
+        dashArray: '2, 6',
+        opacity: 0.9
+    }).addTo(map).bindPopup('✅ NYC → Allentown');
+
+    L.polyline([[allentown.lat, allentown.lon], [philadelphia.lat, philadelphia.lon]], {
+        color: 'green',
+        weight: 4,
+        dashArray: '2, 6',
+        opacity: 0.9
+    }).addTo(map).bindPopup('✅ Allentown → Philadelphia');
+
+    // Animate truck on reroute
+    const truckMarker = L.marker(supplierCoords, { icon: truckIcon }).addTo(map);
+
+    function animateTruck(start, end, marker, duration = 6000) {
+        const steps = 100;
+        let i = 0;
+        const latStep = (end[0] - start[0]) / steps;
+        const lonStep = (end[1] - start[1]) / steps;
+
+        const interval = setInterval(() => {
+            if (i >= steps) {
+                clearInterval(interval);
+                return;
+            }
+            marker.setLatLng([start[0] + latStep * i, start[1] + lonStep * i]);
+            i++;
+        }, duration / steps);
+    }
+
+    animateTruck(supplierCoords, [allentown.lat, allentown.lon], truckMarker, 4000);
+    setTimeout(() => {
+        animateTruck([allentown.lat, allentown.lon], [philadelphia.lat, philadelphia.lon], truckMarker, 4000);
+    }, 4200);
+
+    function moveTruckRoute(start, end, delay, duration = 4000) {
+        setTimeout(() => {
+            animateTruck(start, end, truckMarker, duration);
+        }, delay);
+    }
+
+    // // After NYC → Allentown → Philly (ends ~8200ms)
+    // const postRerouteDelay = 9000; // small buffer after previous animation
+
+    // // Animate NYC → Scranton
+    // const scranton = stores.find(s => s.name.includes("Scranton"));
+    // moveTruckRoute(supplierCoords, [scranton.lat, scranton.lon], postRerouteDelay);
+
+    // // Animate NYC → Boston (after Scranton, ~13s total)
+    // const boston = stores.find(s => s.name.includes("Boston"));
+    // moveTruckRoute(supplierCoords, [boston.lat, boston.lon], postRerouteDelay + 4500);
+        
+    const scranton = stores.find(s => s.name.includes("Scranton"));
+    const boston = stores.find(s => s.name.includes("Boston"));
+
+    const scrantonTruck = L.marker([supplier.lat, supplier.lon], { icon: truckIcon }).addTo(map);
+    const bostonTruck = L.marker([supplier.lat, supplier.lon], { icon: truckIcon }).addTo(map);
+
+    // Animate both trucks simultaneously
+    animateTruck(
+        [supplier.lat, supplier.lon],
+        [scranton.lat, scranton.lon],
+        scrantonTruck,
+        6000
+    );
+
+    animateTruck(
+        [supplier.lat, supplier.lon],
+        [boston.lat, boston.lon],
+        bostonTruck,
+        6000
+    );
+
+    function toggleMenu() {
+        const overlay = document.getElementById('menu-overlay');
+        const hamburger = document.getElementById('hamburger-float');
+
+        const isOpen = overlay.classList.contains('show');
+
+        if (isOpen) {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                hamburger.style.display = 'block';
+            }, 400); // wait for animation to finish
+        } else {
+            overlay.classList.add('show');
+            hamburger.style.display = 'none';
+        }
+    }
+
+    const headlineText = document.getElementById('headline-text');
+    let headlines = [];
+    let current = 0;
+
+    async function loadHeadlines() {
+        try {
+            const res = await fetch('/news/');
+            const data = await res.json();
+            headlines = data.headlines;
+            rotateHeadline();
+        } catch (err) {
+            headlineText.textContent = 'Failed to load news.';
+        }
+    }
+
+    function rotateHeadline() {
+        if (headlines.length === 0) return;
+
+        headlineText.style.opacity = 0;
+
+        setTimeout(() => {
+            headlineText.innerHTML = `
+                <strong>${headlines[current].title}</strong><br>
+                <small>${headlines[current].description}</small>
+            `;
+            headlineText.style.opacity = 1;
+            current = (current + 1) % headlines.length;
+        }, 400);
+
+        setTimeout(rotateHeadline, 4000); // rotate every 6 seconds
+    }
+
+    loadHeadlines();
+
+
+</script>
+</body>
+</html>

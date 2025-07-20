@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Product Sans', sans-serif;
+            background-color: #dbeafe; /* Light blue */
+            background-image: linear-gradient(#dbeafe 1px, transparent 1px),
+                            linear-gradient(90deg, #dbeafe 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: #000;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        /* .sidebar {
+            width: 50%;
+            background-color: #ffffff;
+            border-right: 4px solid black;
+            padding: 30px;
+            box-shadow: 5px 0px 0px black;
+            position: relative;
+        } */
+
+        .sidebar {
+            width: 50%;
+            background-color: #ffffff;
+            border-right: 4px solid black;
+            padding: 20px;
+            box-shadow: 5px 0px 0px black;
+            position: relative;
+            /* overflow-y: auto; */
+            max-height: 100vh;
+        }
+
+        .sidebar * {
+            font-size: 0.95rem;
+        }
+
+        /* Brand Header */
+        .brand-header {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #000;
+            background-color: #c7d2fe;
+            padding: 8px 20px;
+            border: 3px solid black;
+            border-radius: 8px;
+            box-shadow: 4px 4px 0px #000;
+            display: inline-block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Description Text */
+        .sidebar p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        /* Highlight box (e.g. for key words) */
+        .highlight {
+            background-color: #93c5fd;
+            border: 2px solid #000;
+            padding: 3px 8px;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0px #000;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        /* Map Section */
+        .map-section {
+            width: 50%;
+            background-color: #ffffff;
+            border-left: 4px solid black;
+            padding: 20px;
+            box-shadow: -5px 0px 0px black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-container {
+            width: 90%;
+            height: 90%;
+            border: 3px solid black;
+            border-radius: 12px;
+            box-shadow: 6px 6px 0px black;
+            background-color: #f1f5f9;
+            transition: box-shadow 0.3s ease;
+        }
+        .map-container:hover {
+            box-shadow: 10px 10px 0px black;
+        }
+
+        /* Leaflet Map */
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        /* Hamburger */
+        #hamburger-float {
+            position: fixed;
+            top: 35px;
+            left: 20px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: #93c5fd;
+            padding: 8px 12px;
+            border: 3px solid black;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1100;
+            box-shadow: 4px 4px 0 black;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        #hamburger-float:hover {
+            transform: scale(1.1);
+            background-color: #60a5fa;
+        }
+
+        /* Menu Overlay */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 100vw;
+            background: #c7d2fe;
+            border-bottom: 4px solid black;
+            z-index: 1099;
+            box-shadow: 0px 6px 0 black;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(-100%);
+            transition: transform 0.4s ease;
+        }
+        .menu-overlay.show {
+            transform: translateY(0);
+        }
+
+        /* Menu Content */
+        .menu-content {
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            font-weight: bold;
+            font-size: 1.6rem;
+        }
+
+        .menu-content a {
+            color: #000;
+            text-decoration: none;
+            border-bottom: 2px solid black;
+            padding-bottom: 5px;
+            width: fit-content;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+        .menu-content a:hover {
+            color: #2563eb;
+            transform: translateX(6px);
+        }
+
+        #headline-box {
+            margin-top: 20px;
+            padding: 16px;
+            border: 3px solid black;
+            border-radius: 10px;
+            background-color: #fffbcc;
+            box-shadow: 4px 4px 0px #000;
+            font-weight: 600;
+            animation: popIn 0.6s ease-in-out;
+        }
+        
+
+        .animated-headline {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            transition: opacity 0.4s ease-in-out;
+            opacity: 1;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        #alerts-section, #suggestions-section {
+            padding: 16px;
+            border: 3px solid black;
+            border-radius: 10px;
+            background-color: #fef9c3; /* soft yellow */
+            box-shadow: 4px 4px 0px #000;
+            animation: popIn 0.6s ease-in-out;
+        }
+
+        /* Section Headings */
+        #alerts-section h5, #suggestions-section h5 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Bullet List Style */
+        #alerts-section ul, #suggestions-section ul {
+            font-weight: 500;
+            padding-left: 25px;
+            margin-bottom: 0;
+        }
+        .alert-actions-wrapper {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 5px;
+        }
+
+        #alerts-section,
+        #suggestions-section {
+            flex: 1;
+        }
+
+        .leaflet-control.legend {
+            background: #ffffff;
+            padding: 10px 14px;
+            border: 2px solid black;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0px black;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #000;
+        }
+        .leaflet-control.legend img {
+            vertical-align: middle;
+            margin-right: 6px;
+            height: 20px;
+            width: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    
+    <!-- Floating hamburger if you want -->
+    <!-- SETTINGS PAGE -->
+    <div class="main-container" style="flex-direction: column; padding: 40px; gap: 30px; overflow-y: auto;">
+        
+        <h2 class="brand-header">Settings Panel</h2>
+
+        <!-- User Info -->
+        <div class="sidebar" style="width: 100%;">
+            <h5 class="highlight">User Information</h5>
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" placeholder="angad_dogra" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" placeholder="you@example.com" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Change Password</label>
+                <input type="password" class="form-control" placeholder="••••••••" />
+            </div>
+        </div>
+
+        <!-- Notification Preferences -->
+        <div class="sidebar" style="width: 100%;">
+            <h5 class="highlight">Notifications</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" checked />
+                <label class="form-check-label">Receive shipment alerts</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" />
+                <label class="form-check-label">Weekly summary emails</label>
+            </div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="sidebar" style="width: 100%;">
+            <h5 class="highlight">Preferences</h5>
+            <div class="mb-3">
+                <label class="form-label">Theme</label>
+                <select class="form-select">
+                    <option selected>Neo-Brutalist</option>
+                    <option>Minimal</option>
+                    <option>Dark</option>
+                </select>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" checked />
+                <label class="form-check-label">Enable animations</label>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div style="text-align: center;">
+            <button class="btn btn-dark px-4 py-2" style="border: 3px solid black; box-shadow: 4px 4px 0px black;">Save Settings</button>
+        </div>
+
+    </div>
+
+    <!-- Optional Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
