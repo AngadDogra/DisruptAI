@@ -4,11 +4,12 @@ Disrupt AI is a real-time logistics monitoring and decision-making dashboard tha
 
 ---
 
+![Home Screenshot](assets/home.png)
+
+---
 ## Problem Statement
 
 > **Logistics systems lack real-time awareness of external disruptions** such as protests, strikes, or natural disasters. These delays cost time, money, and reliability — especially when the system isn’t built to adapt quickly.
-
-![Dashboard Screenshot](assets/dashboard.png)
 
 ---
 
@@ -21,6 +22,8 @@ Disrupt AI fuses **natural language processing**, **mapping**, and **smart rerou
 - **Animated vehicle simulation** across current and alternative paths
 - **Alerts panel** with suggestions and summaries
 - Built on **Django + Leaflet.js + JavaScript animations**
+
+![Dashboard Screenshot](assets/dashboard.png)
 
 ---
 
